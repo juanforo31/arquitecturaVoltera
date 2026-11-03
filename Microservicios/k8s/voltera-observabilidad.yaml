@@ -1,0 +1,63 @@
+# ============================================================================
+# VOLTERA · OBSERVABILIDAD — que Grafana registre TODO (métricas de aplicación)
+# ----------------------------------------------------------------------------
+# Contexto del problema detectado (2026-10-27):
+#   - Los 19 microservicios exponían `prometheus` en management.endpoints pero
+#     NINGUNO tenía la dependencia `micrometer-registry-prometheus` → el endpoint
+#     /actuator/prometheus NO existía. Grafana solo veía métricas de Istio
+#     (tráfico/latencia por el sidecar), NO las de aplicación (JVM, HTTP, pools).
+#
+# Solución (3 partes):
+#   1) CÓDIGO: añadida la dependencia micrometer-registry-prometheus a los 19
+#      pom.xml (verificado: /actuator/prometheus responde 65+ series). Requiere
+#      rebuild+push de imágenes y rollout (ver README-OBSERVABILIDAD.md).
+#   2) SCRAPE: anotaciones prometheus.io/{scrape,path,port} en cada Deployment
+#      (ya en voltera-services.yaml / -eda.yaml / -negocio-eda.yaml / -cobros.yaml
+#      / -blockchain.yaml / -certificados.yaml), con el puerto real de cada app.
+#   3) mTLS: este manifiesto pone los PUERTOS DE MÉTRICAS en PERMISSIVE para que
+#      Prometheus (fuera de la malla) pueda rasparlos aun con mTLS STRICT global.
+#
+# Verificar tras aplicar:
+#   kubectl -n voltera-app get peerauthentication
+#   # desde un pod con curl dentro de la malla:
+#   kubectl -n voltera-app exec deploy/liquidacion-p2p-service -c liquidacion-p2p-service \
+#     -- wget -qO- http://localhost:8081/actuator/prometheus | head
+#   # en Prometheus (targets): deben aparecer los 19 pods como UP.
+# ============================================================================
+---
+# Permite el scrape en texto plano SOLO en los puertos de métricas de cada app,
+# manteniendo mTLS STRICT para el tráfico de negocio (puertos de servicio).
+# Istio evalúa port-level mode sobre el PeerAuthentication de namespace (STRICT).
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: voltera-metrics-permissive
+  namespace: voltera-app
+spec:
+  # Sin selector -> aplica a todos los workloads del namespace.
+  mtls:
+    mode: STRICT          # se mantiene la postura global STRICT…
+  portLevelMtls:          # …salvo en los puertos de métricas de cada servicio.
+    8081: { mode: PERMISSIVE }   # liquidacion-p2p
+    8082: { mode: PERMISSIVE }   # liquidacion-mensual / telemetria (según asignación)
+    8083: { mode: PERMISSIVE }   # volumetria
+    8084: { mode: PERMISSIVE }   # tarifas
+    8085: { mode: PERMISSIVE }   # pagos / otros
+    8086: { mode: PERMISSIVE }
+    8087: { mode: PERMISSIVE }
+    8088: { mode: PERMISSIVE }   # facturacion
+    8089: { mode: PERMISSIVE }
+    8090: { mode: PERMISSIVE }
+    8091: { mode: PERMISSIVE }
+    8092: { mode: PERMISSIVE }
+    8093: { mode: PERMISSIVE }
+    8094: { mode: PERMISSIVE }
+    8095: { mode: PERMISSIVE }
+    8101: { mode: PERMISSIVE }   # blockchain-gateway
+    8102: { mode: PERMISSIVE }   # certificacion-generacion
+    8103: { mode: PERMISSIVE }   # certificados-renovables
+# NOTA: Si el Prometheus del clúster es el addon de Istio (hace "merged metrics"
+# vía el sidecar en el puerto 15020), este PeerAuthentication no es estrictamente
+# necesario, porque el scrape lo hace el propio Envoy. Se deja por robustez para
+# el caso de un Prometheus externo a la malla. Si causara conflicto, basta con
+# borrar este recurso: el addon de Istio seguirá recogiendo /stats/prometheus.

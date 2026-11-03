@@ -37,6 +37,15 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Metricas de aplicacion para Prometheus/Grafana: expone /actuator/prometheus
+             (JVM, HTTP server, pools, metricas de negocio). Sin esto el endpoint
+             declarado en application.yml no existe y Grafana solo ve metricas de Istio. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- EDA: consumidor de eventos desde el broker (Kafka/Redpanda) -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>

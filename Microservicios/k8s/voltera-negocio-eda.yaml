@@ -38,7 +38,12 @@ spec:
   selector: { matchLabels: { app: habilitacion-service } }
   strategy: { type: RollingUpdate, rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } }
   template:
-    metadata: { labels: { app: habilitacion-service, version: v1 } }
+    metadata:
+      labels: { app: habilitacion-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8095"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -104,7 +109,12 @@ spec:
   selector: { matchLabels: { app: integracion-ami-service } }
   strategy: { type: RollingUpdate, rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } }
   template:
-    metadata: { labels: { app: integracion-ami-service, version: v1 } }
+    metadata:
+      labels: { app: integracion-ami-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8096"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -165,7 +175,12 @@ spec:
   selector: { matchLabels: { app: ingesta-service } }
   strategy: { type: RollingUpdate, rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } }
   template:
-    metadata: { labels: { app: ingesta-service, version: v1 } }
+    metadata:
+      labels: { app: ingesta-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8097"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -227,7 +242,12 @@ spec:
   selector: { matchLabels: { app: telemetria-core-service } }
   strategy: { type: RollingUpdate, rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } }
   template:
-    metadata: { labels: { app: telemetria-core-service, version: v1 } }
+    metadata:
+      labels: { app: telemetria-core-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8098"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -293,7 +313,12 @@ spec:
   selector: { matchLabels: { app: notificaciones-service } }
   strategy: { type: RollingUpdate, rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } }
   template:
-    metadata: { labels: { app: notificaciones-service, version: v1 } }
+    metadata:
+      labels: { app: notificaciones-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8099"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:

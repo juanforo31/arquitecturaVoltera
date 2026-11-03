@@ -12,9 +12,15 @@ spec:
   replicas: 1
   selector: { matchLabels: { app: certificacion-generacion-service } }
   template:
-    metadata: { labels: { app: certificacion-generacion-service, version: v1 } }
+    metadata:
+      labels: { app: certificacion-generacion-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8102"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
+      nodeSelector: { node-role.kubernetes.io/worker: "" }
       containers:
         - name: certificacion-generacion-service
           image: 192.168.3.13/app-voltaire/certificacion-generacion-service:1.0.0
@@ -70,9 +76,15 @@ spec:
   replicas: 1
   selector: { matchLabels: { app: certificados-renovables-service } }
   template:
-    metadata: { labels: { app: certificados-renovables-service, version: v1 } }
+    metadata:
+      labels: { app: certificados-renovables-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8103"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
+      nodeSelector: { node-role.kubernetes.io/worker: "" }
       containers:
         - name: certificados-renovables-service
           image: 192.168.3.13/app-voltaire/certificados-renovables-service:1.0.0
@@ -80,8 +92,9 @@ spec:
           env:
             - { name: EUREKA_ENABLED, value: "true" }
             - { name: EUREKA_URL, value: "http://service-registry:8761/eureka/" }
-            # Usa el gateway interno del clúster para pedir las operaciones de NFT.
-            - { name: VOLTERA_BLOCKCHAIN_GATEWAY_URL, value: "http://blockchain-gateway-service:8101" }
+            # El blockchain-gateway NO vive en el clúster: está en la PaaS (Render).
+            # Este servicio (ACL) le pide al gateway de Render las operaciones de NFT.
+            - { name: VOLTERA_BLOCKCHAIN_GATEWAY_URL, value: "https://voltera-blockchain-gateway.onrender.com" }
           resources:
             limits: { cpu: "500m", memory: "512Mi" }
             requests: { cpu: "50m", memory: "256Mi" }

@@ -84,7 +84,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: siniestros-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: siniestros-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8091"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -153,7 +158,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: reaseguro-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: reaseguro-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8092"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -260,7 +270,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: telemetria-service, version: v1 } }
+    metadata:
+      labels: { app: telemetria-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8093"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -322,7 +337,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: tarifa-eventos-service, version: v1 } }
+    metadata:
+      labels: { app: tarifa-eventos-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8094"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:

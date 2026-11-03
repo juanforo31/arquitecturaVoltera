@@ -38,7 +38,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: blockchain-gateway-service, version: v1 } }   # version -> Kiali
+    metadata:
+      labels: { app: blockchain-gateway-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8101"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:

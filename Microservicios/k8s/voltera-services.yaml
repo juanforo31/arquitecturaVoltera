@@ -9,7 +9,12 @@ spec:
   replicas: 2                                   # HA: 2 replicas base (el HPA ajusta entre min/max)
   selector: { matchLabels: { app: facturacion-service } }
   template:
-    metadata: { labels: { app: facturacion-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: facturacion-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8088"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -67,7 +72,12 @@ spec:
   replicas: 2                                   # HA: 2 replicas base (el HPA ajusta entre min/max)
   selector: { matchLabels: { app: liquidacion-mensual-service } }
   template:
-    metadata: { labels: { app: liquidacion-mensual-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: liquidacion-mensual-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8082"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -125,7 +135,12 @@ spec:
   replicas: 2                                   # HA: 2 replicas base (el HPA ajusta entre min/max)
   selector: { matchLabels: { app: liquidacion-p2p-service } }
   template:
-    metadata: { labels: { app: liquidacion-p2p-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: liquidacion-p2p-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8081"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -187,7 +202,12 @@ spec:
   replicas: 2                                   # HA: 2 replicas base (el HPA ajusta entre min/max)
   selector: { matchLabels: { app: volumetria-service } }
   template:
-    metadata: { labels: { app: volumetria-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: volumetria-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8083"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -248,7 +268,12 @@ spec:
   replicas: 2                                   # HA: 2 replicas base (el HPA ajusta entre min/max)
   selector: { matchLabels: { app: tarifas-service } }
   template:
-    metadata: { labels: { app: tarifas-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: tarifas-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8084"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
@@ -321,7 +346,12 @@ spec:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 0, maxUnavailable: 1 }
   template:
-    metadata: { labels: { app: pagos-service, version: v1 } }   # version -> Kiali/telemetria
+    metadata:
+      labels: { app: pagos-service, version: v1 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8085"
     spec:
       imagePullSecrets: [{ name: harbor-cred }]
       containers:
