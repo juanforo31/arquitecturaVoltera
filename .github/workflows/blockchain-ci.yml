@@ -1,0 +1,49 @@
+name: Blockchain CI
+
+# Compila, linta y testea los contratos de la POC blockchain de Voltera.
+# Corre en cada push/PR que toque la carpeta Blockchain/.
+on:
+  push:
+    paths:
+      - "Blockchain/**"
+      - ".github/workflows/blockchain-ci.yml"
+  pull_request:
+    paths:
+      - "Blockchain/**"
+      - ".github/workflows/blockchain-ci.yml"
+  workflow_dispatch: {}
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Blockchain
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Blockchain/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (solhint)
+        run: npm run lint
+
+      - name: Compile
+        run: npm run build
+
+      - name: Test (37 tests)
+        run: npm test
+
+      - name: Integrity check (demo local, sin gas)
+        run: npm run integridad
+
+      - name: Coverage
+        run: npm run coverage
+        continue-on-error: true

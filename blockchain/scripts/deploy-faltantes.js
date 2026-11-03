@@ -74,6 +74,8 @@ async function main() {
     certificadoOrigenNFT: { contract: "CertificadoOrigenNFT", address: addrNft, tipo: "ERC-721 no fungible" },
     actualizadoAt: new Date().toISOString(),
   };
+  // Ya desplegados: la nota de "pendientes" deja de aplicar.
+  delete merged.pendientesDeDespliegue;
   fs.writeFileSync(outFile, JSON.stringify(merged, null, 2));
   console.log(`Direcciones mergeadas en deployments/${net}.json (anchor preservado).`);
   console.log(

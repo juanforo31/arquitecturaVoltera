@@ -12,6 +12,8 @@ require("dotenv").config();
 const AMOY_RPC_URL = process.env.AMOY_RPC_URL || "https://rpc-amoy.polygon.technology";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "";
+// Activa el reporte de gas con: REPORT_GAS=true npm test
+const REPORT_GAS = process.env.REPORT_GAS === "true";
 
 const accounts = PRIVATE_KEY && PRIVATE_KEY.startsWith("0x") && PRIVATE_KEY.length === 66
   ? [PRIVATE_KEY]
@@ -57,5 +59,13 @@ module.exports = {
         },
       },
     ],
+  },
+  // Reporte de gas por funcion (solo si REPORT_GAS=true). No gasta nada: mide
+  // sobre la red Hardhat en memoria. Util para la entrega (coste on-chain estimado).
+  gasReporter: {
+    enabled: REPORT_GAS,
+    currency: "USD",
+    token: "POL",
+    showMethodSig: true,
   },
 };

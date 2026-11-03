@@ -42,9 +42,15 @@ contract ComunidadEnergeticaRegistry is AccessControl, Pausable {
     /// @notice total de comunidades registradas (contador monotono).
     uint256 public totalComunidades;
 
-    event ComunidadRegistrada(bytes32 indexed comunidadId, bytes32 nombreHash, uint64 creadaEn, address indexed operador);
-    event MiembroAgregado(bytes32 indexed comunidadId, bytes32 indexed prosumidorId, uint64 en, address indexed operador);
-    event MiembroRemovido(bytes32 indexed comunidadId, bytes32 indexed prosumidorId, uint64 en, address indexed operador);
+    event ComunidadRegistrada(
+        bytes32 indexed comunidadId, bytes32 nombreHash, uint64 creadaEn, address indexed operador
+    );
+    event MiembroAgregado(
+        bytes32 indexed comunidadId, bytes32 indexed prosumidorId, uint64 en, address indexed operador
+    );
+    event MiembroRemovido(
+        bytes32 indexed comunidadId, bytes32 indexed prosumidorId, uint64 en, address indexed operador
+    );
 
     error ComunidadIdVacio();
     error ComunidadYaExiste(bytes32 comunidadId);
@@ -147,6 +153,12 @@ contract ComunidadEnergeticaRegistry is AccessControl, Pausable {
 
     function pausar() external onlyRole(DEFAULT_ADMIN_ROLE) { _pause(); }
     function reanudar() external onlyRole(DEFAULT_ADMIN_ROLE) { _unpause(); }
-    function autorizarOperador(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) { _grantRole(OPERADOR_ROLE, cuenta); }
-    function revocarOperador(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) { _revokeRole(OPERADOR_ROLE, cuenta); }
+
+    function autorizarOperador(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(OPERADOR_ROLE, cuenta);
+    }
+
+    function revocarOperador(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(OPERADOR_ROLE, cuenta);
+    }
 }

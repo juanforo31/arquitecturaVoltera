@@ -1,7 +1,214 @@
 # Estado de la sesión — Blockchain Voltera
 
-> Punto de retome para la próxima sesión. Última actualización: 2026-10-26 (lámina 06 experimento de validación: front + script + doc · integridad OK live · Vercel LIVE).
+> Punto de retome para la próxima sesión. Última actualización: 2026-11-03 (AUDITORÍA DE ENTREGA del
+> proyecto Blockchain: sincronización de docs con el código real; sin cambios de arquitectura).
 > Lee este archivo primero al reconectar.
+
+## ✅ AUDITORÍA DE ENTREGA · carpeta `Blockchain/` (2026-11-03)
+
+Pedido: validar qué más se requiere para que el proyecto Blockchain quede completo y específico para
+entregar, incluyendo front y backend del experimento.
+
+**Estado real confirmado:** contratos compilan (solc 0.8.24 / Cancun) y **37 tests passing**; gateway
+**15 tests** BUILD SUCCESS; front **build OK** (395.94 kB). Anchor LIVE en Amoy (`0xd0Ef…EBcf530`).
+
+**Mejoras de CALIDAD agregadas a `Blockchain/` (sin cambiar arquitectura):**
+1. **solhint** (`.solhint.json` + `.solhintignore`) + script `npm run lint` → lint **0 errores,
+   0 warnings** (se partieron líneas largas en Comunidad/Multisig, sin cambio de comportamiento).
+2. **gas reporter** activable (`REPORT_GAS=true npm run test:gas`) y **coverage**
+   (`npm run coverage`) — ambos ya venían con hardhat-toolbox, solo se cablearon.
+3. **Script `scripts/verificar-integridad.js`** (`npm run integridad`): despliega los 4 contratos en
+   memoria y corre el camino feliz + la **prueba de integridad** (gate 4) y la **unicidad** (lámina
+   06) de un tirón, sin gas. Verificado: 4/4 OK.
+4. **Script agregado `npm run check`** (lint+build+test) y `deploy:faltantes`.
+5. **CI GitHub Actions** `.github/workflows/blockchain-ci.yml`: lint→compile→test→integridad→coverage
+   en cada push que toque `Blockchain/`.
+
+**Front y backend del experimento (validados, NO requerían cambios):**
+- Gateway: endpoints completos (anclar, verificar, obtener, listar, comunidades, red + slice NFT
+  emitir/transferir/quemar/consultar/red). 15 tests verdes. Modos demo/real/Kafka por env.
+- Front: 4 páginas del Módulo 4 (`/blockchain`, `/certificados`, `/microservicios-cadena`,
+  `/experimento-validacion`) con los 2 servicios cableados a todos los endpoints; página de
+  experimento con prueba de integridad y de unicidad. Sin TODOs ni mocks pendientes. Build OK.
+
+**NUEVO documento maestro `ENTREGA_BLOCKCHAIN.md` (raíz):** punto único de entrada para el evaluador
+(qué es la POC, arquitectura 3 zonas, componentes, el experimento lámina 06, cómo reproducir de un
+tirón, qué falta por gas).
+
+**Gaps de consistencia corregidos antes (misma sesión):** README desincronizado (firma del NFT),
+`ComunidadEnergeticaRegistry` ausente en README, `deployments/amoy.json` ahora honesto sobre qué
+está LIVE vs pendiente. Detalle abajo.
+
+**Diagrama `.drawio`:** NO se tocó — ninguna de estas mejoras cambió topología (ni servicios, ni
+topics, ni puertos, ni patrones nuevos: solo calidad de código, scripts, CI y documentación). La
+regla permanente se cumple.
+
+**Pendiente (acción del usuario, requiere gas/credenciales — no es código):** recargar POL en el
+faucet y `npm run deploy:faltantes`; en Render poner el RPC de publicnode. Ver `ENTREGA_BLOCKCHAIN.md §6`.
+
+---
+
+## ✅ SINCRONIZACIÓN DOC↔CÓDIGO · carpeta `Blockchain/` (2026-11-03, previo)
+
+**Estado real confirmado:** compila (solc 0.8.24 / Cancun) y **37 tests passing** (8 anchor + 9
+comunidad + 11 multisig + 9 NFT). Anchor LIVE en Amoy (`0xd0Ef…EBcf530`).
+
+**Gaps encontrados y corregidos (solo docs/consistencia, NO arquitectura):**
+1. **README desincronizado (bug):** la tabla de `CertificadoOrigenNFT` documentaba la firma vieja
+   `emitirCertificado(propietario, uri, hashDetalle, energiaMWh, tecnologia)`. El contrato real usa
+   `(propietario, uri, idMedidor, consumoNetoMensual, periodo, hashDetalle)`. **Corregido** + añadidos
+   `tokenDe/totalEmitidos` y los 4 atributos de la lámina.
+2. **`ComunidadEnergeticaRegistry` no estaba en el README** pese a ser contrato de primera clase (se
+   despliega, 9 tests). **Añadida su tabla.**
+3. **Cabecera del README** ahora lista los 4 contratos, el estado LIVE/pendiente de cada uno, y la
+   nota de `evmVersion: cancun`. Añadida sección **"Estado de la entrega"** + receta reproducible
+   (`npm test` y `anclar-prueba.js`).
+4. **`deployments/amoy.json`** ahora dice honestamente que solo el anchor está LIVE y que Comunidad/
+   Multisig/NFT están pendientes de deploy (faltó gas). `deploy-faltantes.js` limpia esa nota al
+   desplegar. Añadido script npm `deploy:faltantes`.
+
+**Pendiente (acción del usuario, requiere gas/credenciales — no es código):**
+- Recargar POL en el faucet de Amoy para `0xa0A1…AFDf2` y correr `npm run deploy:faltantes` → deja
+  los otros 3 contratos LIVE.
+- Confirmar el anclaje P2P on-chain desde Render (RPC publicnode + gas), ya documentado abajo.
+
+**Diagrama `.drawio`:** NO se tocó porque esta auditoría no cambió topología (ni servicios, ni
+topics, ni puertos, ni patrones nuevos — solo sincronización doc↔código). La regla permanente se
+cumple: no hubo cambio de arquitectura que reflejar.
+
+## 🚀 DESPLIEGUE LÁMINA 04 EN EL CLÚSTER k8s (2026-10-27)
+
+Pedido: validar qué hacía falta desplegar y, por indicación explícita del usuario, **NO poner los
+servicios de blockchain en el clúster, sino los microservicios NUEVOS** (los de la lámina 04).
+
+**Diagnóstico en vivo (SSH atiesia@192.168.3.11, ns `voltera-app`):**
+- Clúster sano: 20/20 pods Running, KEDA operando (8 ScaledObjects + HPAs), master 77% mem / worker 57%.
+- Faltaban en el clúster (vivían solo en Render/Vercel): `blockchain-gateway-service`,
+  `certificacion-generacion-service`, `certificados-renovables-service` (ninguna imagen en Harbor).
+
+**Qué se hizo (según la indicación del usuario):**
+1. **Build + push amd64 a Harbor** (`192.168.3.13/app-voltaire`) de SOLO los 2 microservicios
+   nuevos de lámina 04 (NO el blockchain-gateway): `certificacion-generacion-service:1.0.0` y
+   `certificados-renovables-service:1.0.0` (verificado arch=amd64).
+2. **`blockchain-gateway-service` se QUEDA en Render** (PaaS, `https://voltera-blockchain-gateway.onrender.com`),
+   NO se desplegó en el clúster.
+3. Ajustado `Microservicios/k8s/voltera-certificados.yaml`:
+   - `certificados-renovables-service` ahora apunta a `VOLTERA_BLOCKCHAIN_GATEWAY_URL=
+     https://voltera-blockchain-gateway.onrender.com` (antes apuntaba al gateway interno del clúster).
+   - Ambos deployments anclados al worker (`nodeSelector node-role.kubernetes.io/worker`) para
+     no cargar el master (procedimiento de scheduling).
+4. **Aplicado al clúster** (dry-run server OK → apply): 2 Deployments + 2 Services + 2 HTTPRoutes.
+
+**✅ VERIFICADO EN VIVO:**
+- Pods `2/2 Running` en worker-01: `certificacion-generacion-service`, `certificados-renovables-service`.
+- `/actuator/health` = UP en ambos (dentro del pod).
+- Acceso externo por el LoadBalancer de Istio (`http://192.168.3.220`): `/certificacion-generacion/actuator/health`
+  = **200** y `/certificados-renovables/actuator/health` = **200**.
+- Env `VOLTERA_BLOCKCHAIN_GATEWAY_URL` inyectada = `https://voltera-blockchain-gateway.onrender.com`.
+- Namespace pasó de 20 a **22/22 pods Running**.
+- Diagrama vivo actualizado (cajas `ms-cert-gen`/`ms-cert-ren` → ✅ LIVE en clúster k8s; arista ACL
+  marcada clúster→Render). XML validado.
+
+**Nota de seguridad:** credenciales SSH/registry/namespace llegaron por chat → conviene rotarlas.
+
+---
+
+## 🧪 VALIDACIÓN E2E DEL EXPERIMENTO (2026-10-27)
+
+Pedido: validar que el experimento esté completo para las pruebas end-to-end.
+
+**Qué se corrió (contra infra real: Vercel + WSO2 + liquidacion-p2p clúster + gateway Render + Amoy):**
+
+1. **`experimento-p2p.sh` (marketplace P2P + anclaje):** flujo completo OK salvo la confirmación
+   on-chain. Pasos verificados en vivo:
+   - PASO 0 cadena disponible (contrato `0xd0Ef…EBcf530`, chainId 80002). ✅
+   - PASO 1 token OAuth2 del BFF. ✅
+   - PASO 3 CASAR en `liquidacion-p2p` (clúster): contrato casado, 10 kWh @ 460, PARCIAL. ✅
+   - PASO 4 ANCLAR: hash keccak256 calculado, estado PENDIENTE. ✅
+   - PASO 5 confirmación on-chain: **NO confirmó** (quedó PENDIENTE tras 120 s). ⚠
+   - PASO 6 verificar integridad (lectura): integro:true. ✅
+
+2. **`experimento-validacion.sh` (lámina 06): 8/8 criterios OK** ✅ — incluido el Experimento 2
+   (NFT) que antes daba 404: ahora `tokenId=1`, transferencia trazable, duplicado RECHAZADO (HTTP 400).
+   Prueba de integridad del oráculo: datos originales → integro:true, datos alterados → integro:false.
+
+**⚠ CAUSA RAÍZ de que el anclaje P2P no CONFIRME on-chain (2 problemas sumados, ambos externos
+al código y al clúster):**
+- **Gas insuficiente:** la wallet de prueba `0xa0A1…AFDf2` tiene **0.0047 POL** (consultado on-chain
+  vía publicnode). El `.env` decía 0.1 POL pero ya se consumió en pruebas. Hace falta recargar en
+  el faucet (https://faucet.polygon.technology, red Amoy) → ~0.2 POL.
+- **RPC malo en Render:** el anclaje falla con `Invalid response 500 ... Temporary internal error,
+  code 19` → es `https://polygon-amoy.drpc.org` rechazando `eth_sendRawTransaction`. Solución ya
+  conocida: cambiar en el dashboard de Render `VOLTERA_BLOCKCHAIN_RPC_URL` a
+  **`https://polygon-amoy-bor-rpc.publicnode.com`** (verificado que sí acepta envío). `render.yaml`
+  actualizado con esta nota.
+
+**Conclusión:** el experimento (código + orquestación) está COMPLETO y correcto. La validación
+lámina 06 pasa 8/8. El único punto abierto es la **confirmación on-chain del anclaje P2P**, que
+depende de 2 acciones tuyas (no de código): (1) recargar POL en el faucet, (2) poner el RPC de
+publicnode en el dashboard de Render. Hechas esas dos, el PASO 5 confirmará (txHash+bloque+gas).
+No tengo credenciales de Render ni del faucet, por eso no puedo cerrarlo yo.
+
+### ✅ PRUEBA EMPÍRICA del camino on-chain SIN Render (2026-10-27) — DEMOSTRADO
+Para avanzar sin esperar a Render, se creó `Blockchain/scripts/anclar-prueba.js` que ancla DIRECTO
+al contrato ya desplegado usando el RPC bueno. Ejecutado:
+```
+AMOY_RPC_URL=https://polygon-amoy-bor-rpc.publicnode.com \
+  npx hardhat run scripts/anclar-prueba.js --network amoy
+```
+**Resultado: ANCLAJE CONFIRMADO ON-CHAIN** (la wallet ES ORACULO_ROLE):
+- txHash `0xe1a5b57c55173fc44a56065ee47b8bcdd63a5d6ee05d458d93cc56df387c8bd5`
+- bloque 51297135 · gasUsed 119988 · `totalAncladas` 10 → **11**
+- https://amoy.polygonscan.com/tx/0xe1a5b57c55173fc44a56065ee47b8bcdd63a5d6ee05d458d93cc56df387c8bd5
+
+**Esto prueba que el bloqueo REAL era el RPC (drpc code 19), NO el código ni el gas** (con publicnode
+la tx confirma; alcanzaba para 1 anclaje). Tras el envío el balance bajó a **0.0011 POL → ya NO
+alcanza** para otro: ahora SÍ es obligatorio recargar el faucet antes de la demo final.
+
+**Checklist para cerrar el experimento P2P on-chain (acciones tuyas):**
+1. Faucet Amoy → `0xa0A18C1D64272f9a6a248Deb5106994F5D8AFDf2` (~0.2 POL): https://faucet.polygon.technology
+2. Render dashboard → `VOLTERA_BLOCKCHAIN_RPC_URL = https://polygon-amoy-bor-rpc.publicnode.com` (redeploy).
+3. Re-ejecutar `Microservicios/experimento-p2p.sh` → el PASO 5 debe salir CONFIRMADO.
+   (Diagnóstico rápido sin gastar gas: `DRY_RUN=1 AMOY_RPC_URL=…publicnode… npx hardhat run
+   scripts/anclar-prueba.js --network amoy` desde `Blockchain/`.)
+
+---
+
+## 📊 OBSERVABILIDAD · que Grafana registre TODO (2026-10-27)
+
+Pedido: verificar que Grafana registre todo y, si no, implementarlo. La LAN (SSH/Harbor/LB) se
+cayó a mitad de sesión → no pude inspeccionar Grafana en vivo, así que **audité el repo e
+implementé el gap real** (listo para aplicar cuando vuelva la VPN).
+
+**Gap detectado (causa de que Grafana NO registre métricas de aplicación):**
+- Los 19 microservicios **exponían** `prometheus` en `management.endpoints.web.exposure.include`
+  pero **ninguno tenía la dependencia** `micrometer-registry-prometheus` → `/actuator/prometheus`
+  NO existía. Grafana solo veía métricas de Istio (tráfico/latencia del sidecar), nunca JVM/HTTP/pools.
+- Además, **ningún Deployment tenía anotaciones `prometheus.io/scrape`** → aunque existiera el
+  endpoint, Prometheus no raspaba esos pods.
+
+**Implementado (todo en el repo, verificado):**
+1. **19 `pom.xml`**: + `io.micrometer:micrometer-registry-prometheus` (runtime). XML de los 19 OK.
+   Compilado `liquidacion-p2p` y **arrancado localmente: `/actuator/prometheus` responde con 65
+   series reales** (jvm_memory_used_bytes, http_server_requests_seconds, threads, cpu…).
+2. **Anotaciones de scrape** en los 19 Deployments (`prometheus.io/{scrape,path,port}` con el
+   puerto real de cada servicio) en voltera-services/-eda/-negocio-eda/-cobros/-blockchain/
+   -certificados.yaml. YAML validado.
+3. **`voltera-observabilidad.yaml`** (NUEVO): PeerAuthentication que pone los puertos de métricas
+   en PERMISSIVE (mantiene mTLS STRICT para el negocio) por si el Prometheus está fuera de la malla.
+4. **`README-OBSERVABILIDAD.md`** (NUEVO): pasos para aplicar (rebuild+push imágenes, apply
+   manifiestos, rollout, importar dashboards con `grafana-import-dashboards.sh`) + verificación.
+
+**Pendiente de aplicar (requiere LAN, que está caída):** rebuild+push de las 19 imágenes
+(`./build-push-all.sh`), `kubectl apply` de los manifiestos anotados + `voltera-observabilidad.yaml`,
+rollout, y re-importar dashboards. Hasta entonces Grafana sigue con solo-mesh; tras aplicarlo
+registrará también las métricas de aplicación de los 19 servicios.
+
+**Nota:** las trazas (brave→Zipkin/Jaeger) ya tienen la dependencia en todos los servicios; la
+latencia por salto (Istio) ya operaba. El único gap de registro era el de métricas de aplicación,
+ya resuelto en código y manifiestos.
+
+---
 
 ## 🧪 LÁMINA 06 · EXPERIMENTO DE VALIDACIÓN (opción C: doc + script + front + tests) (2026-10-26, noche 3)
 

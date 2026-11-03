@@ -1,13 +1,22 @@
 # Voltera · Blockchain (Polygon Amoy — 100% gratuito)
 
-Contrato que ancla en Polygon la **prueba de integridad (hash)** de cada liquidación
-del mercado energético **P2P** de Voltera. Diseño alineado con el árbol de decisión
-documentado en `../BLOCKCHAIN_VOLTERA.md` (secciones 5 y 6).
+Capa on-chain del proyecto Voltera (Módulo 4, ARTI4208). **Cuatro contratos Solidity** sobre
+**Polygon Amoy** (testnet gratuita), proyecto **Hardhat** con **37 tests** verdes y despliegue
+reproducible. Diseño alineado con el árbol de decisión documentado en `../BLOCKCHAIN_VOLTERA.md`
+(secciones 5 y 6) y los patrones de `../PATRONES_BLOCKCHAIN_VOLTERA.md`.
+
+| Contrato | Patrón / familia | Rol en Voltera |
+|---|---|---|
+| `LiquidacionP2PAnchor` | off-chain storage (datos) + Embedded Permission (seguridad) | Ancla el **hash** de cada liquidación del mercado P2P. **LIVE** en Amoy. |
+| `ComunidadEnergeticaRegistry` | contract registry (control estructural) | Padrón on-chain de comunidades y membresía de prosumidores. |
+| `CesionCertificadoMultisig` | Multiple Authorization (seguridad) | Cesión de certificados con **2 firmas** distintas antes de registrar. |
+| `CertificadoOrigenNFT` | Tokenización · ERC-721 no fungible (datos) | Certificado de origen renovable como **NFT único** (OpenZeppelin). |
 
 - **Red:** Polygon **Amoy** testnet (chainId `80002`, gas token `POL`) — gratuita.
 - **RPC:** a través de un **tercero** (proveedor gestionado gratuito), sin nodo propio.
-- **On-chain solo el hash** (gate 8): no se exponen datos sensibles aunque la red sea pública.
+- **On-chain solo el hash / IDs** (gate 8): no se exponen datos sensibles aunque la red sea pública.
 - **Confirmación por evento** (gate 6): el gateway indexa `LiquidacionAnclada` y lo republica en Kafka.
+- **Compilación:** solc `0.8.24`, `evmVersion: cancun` (OZ 5.6 usa `mcopy`/EIP-5656; Amoy lo soporta por PIP-31).
 
 ## Requisitos
 - Node.js 18+ (probado con v24).
@@ -74,6 +83,23 @@ registrar (umbral M-de-N con M=2). Familia **seguridad**. Ver `../PATRONES_BLOCK
 Eventos: `CesionPropuesta`, `CesionFirmada`, `CesionRegistrada`.
 ⚠️ Requiere ≥2 firmantes autorizados; con uno solo nada se registra (es el costo del patrón).
 
+## Contrato `ComunidadEnergeticaRegistry` (padrón on-chain de comunidades)
+Registro inmutable de **comunidades energéticas** y de la **membresía** de sus prosumidores.
+Complementa a `LiquidacionP2PAnchor`: mientras ese ancla cada casación, este fija **quién pertenece
+a cada comunidad** (base para auditar que una casación P2P ocurrió entre miembros de la misma
+comunidad). On-chain van IDs/hashes `bytes32` (gate 8), nunca datos personales. Familia **control
+estructural**.
+
+| Función | Rol | Qué hace |
+|---|---|---|
+| `registrarComunidad(comunidadId, nombreHash)` | `OPERADOR_ROLE` | Da de alta una comunidad (nombre canónico off-chain, solo su hash on-chain). |
+| `agregarMiembro(comunidadId, prosumidorId)` / `removerMiembro(...)` | `OPERADOR_ROLE` | Alta/baja de prosumidores en el padrón; queda registrado por evento (no repudio). |
+| `puedenCasar(comunidadId, vendedorId, compradorId)` | público (view) | Regla de dominio: ambos deben ser miembros activos de la MISMA comunidad y distintos. |
+| `existeComunidad` / `obtenerComunidad` / `esMiembro` | público (view) | Lecturas para auditor / indexador. |
+| `autorizarOperador` / `revocarOperador` · `pausar` / `reanudar` | `DEFAULT_ADMIN_ROLE` | Padrón de operadores y parada de emergencia. |
+
+Eventos: `ComunidadRegistrada`, `MiembroAgregado`, `MiembroRemovido`.
+
 ## Contrato `CertificadoOrigenNFT` (patrón Tokenización · ERC-721 NO fungible)
 Certificado de origen renovable como **token NO fungible** (cada certificado es único),
 usando las implementaciones de **OpenZeppelin**: `ERC721` + `ERC721URIStorage` (metadata
@@ -81,11 +107,16 @@ off-chain) + `ERC721Burnable` + `AccessControl`. Familia **datos**. Se eligió E
 (no fungible) y **no** ERC-20 (fungible) ni ERC-1155 (semi-fungible) porque cada certificado
 es único e irrepetible. Ver `../PATRONES_BLOCKCHAIN_VOLTERA.md`.
 
+Atributos del certificado (láminas 05/06): **idMedidor · propietario** (owner ERC-721) **·
+emisor · consumoNetoMensual** (+ `periodo` AAAAMM y `hashDetalle`). La pareja `(idMedidor, periodo)`
+impide duplicados on-chain (lámina 06: "100% de intentos de emisión duplicada rechazados").
+
 | Función | Rol | Qué hace |
 |---|---|---|
-| `emitirCertificado(propietario, uri, hashDetalle, energiaMWh, tecnologia)` | `EMISOR_ROLE` | Acuña un NFT único y lo asigna. Devuelve el `tokenId`. |
-| `tokenURI(tokenId)` / `certificados(tokenId)` | público (view) | Metadata off-chain + datos mínimos on-chain. |
-| `transferFrom` / `safeTransferFrom` | propietario | Transferencia estándar ERC-721. |
+| `emitirCertificado(propietario, uri, idMedidor, consumoNetoMensual, periodo, hashDetalle)` | `EMISOR_ROLE` | Acuña un NFT único, lo asigna a `propietario` y devuelve el `tokenId`. Revierte con `CertificadoDuplicado` si ya existe uno para `(idMedidor, periodo)`. |
+| `certificados(tokenId)` / `tokenURI(tokenId)` | público (view) | Datos mínimos on-chain (idMedidor, emisor, consumoNetoMensual, periodo, hashDetalle) + metadata off-chain. |
+| `tokenDe(idMedidor, periodo)` / `totalEmitidos()` | público (view) | tokenId emitido para un (medidor, periodo) y total acuñado. |
+| `transferFrom` / `safeTransferFrom` | propietario | Transferencia billetera→billetera estándar ERC-721. |
 | `burn(tokenId)` | propietario | Retira/cancela el certificado (ERC721Burnable). |
 
 Eventos: `CertificadoEmitido` + los estándar de ERC-721 (`Transfer`, `Approval`).
@@ -94,3 +125,31 @@ Eventos: `CertificadoEmitido` + los estándar de ERC-721 (`Transfer`, `Approval`
 - `AccessControl` + `Pausable` de OpenZeppelin (patrón *Embedded Permission* / Zero Trust on-chain).
 - Sin transferencias de valor → sin superficie de reentrada.
 - La `PRIVATE_KEY` del `.env` es **solo de testnet**; nunca uses una con fondos reales.
+
+## Estado de la entrega
+| Pieza | Estado |
+|---|---|
+| 4 contratos Solidity | ✅ Escritos, compilan (solc 0.8.24 / Cancun). |
+| Suite de tests | ✅ **37 passing** (`npm test`): 8 anchor + 9 comunidad + 11 multisig + 9 NFT. |
+| `LiquidacionP2PAnchor` en Amoy | ✅ **LIVE** en `0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530` (anclajes reales confirmados; ver `../SESION_BLOCKCHAIN_ESTADO.md`). |
+| Comunidad / Multisig / NFT en Amoy | ⏳ Pendientes de desplegar por falta de gas de prueba. Correr `npm run deploy:faltantes` tras recargar POL en el faucet (preserva el anchor LIVE). |
+| Gateway de borde (web3j) | ✅ `../Microservicios/ServiciosDeNegocio/blockchain-gateway-service/` (oráculo + indexador + OUTBOX). |
+| Front (marketplace P2P + NFT) | ✅ `../Microservicios/voltera-frontend/` páginas `/blockchain`, `/certificados`, `/microservicios-cadena`. |
+| Diagrama vivo | ✅ `../Modificados/Voltera_Arquitectura_Completa.drawio` (capa 4 blockchain). |
+
+### Cómo reproducir la validación (de un tirón)
+```bash
+cd Blockchain
+npm install
+npm run check        # lint (solhint) + compila los 4 contratos + 37 tests
+npm run integridad   # demo local de los 4 contratos (prueba de integridad + unicidad), sin gas
+npm run test:gas     # (opcional) reporte de coste de gas por función
+npm run coverage     # (opcional) cobertura de los contratos
+```
+CI equivalente en `.github/workflows/blockchain-ci.yml` (corre en cada push que toque `Blockchain/`).
+
+Para el camino on-chain real (anclaje confirmado en Amoy) sin desplegar nada nuevo:
+```bash
+AMOY_RPC_URL=https://polygon-amoy-bor-rpc.publicnode.com \
+  npx hardhat run scripts/anclar-prueba.js --network amoy   # usa el anchor LIVE
+```

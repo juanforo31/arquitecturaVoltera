@@ -186,6 +186,12 @@ contract CesionCertificadoMultisig is AccessControl, Pausable {
 
     function pausar() external onlyRole(DEFAULT_ADMIN_ROLE) { _pause(); }
     function reanudar() external onlyRole(DEFAULT_ADMIN_ROLE) { _unpause(); }
-    function autorizarFirmante(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) { _grantRole(FIRMANTE_ROLE, cuenta); }
-    function revocarFirmante(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) { _revokeRole(FIRMANTE_ROLE, cuenta); }
+
+    function autorizarFirmante(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(FIRMANTE_ROLE, cuenta);
+    }
+
+    function revocarFirmante(address cuenta) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(FIRMANTE_ROLE, cuenta);
+    }
 }

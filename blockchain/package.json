@@ -1,20 +1,28 @@
 {
   "name": "voltera-blockchain",
   "version": "1.0.0",
-  "description": "Contrato de anclaje de liquidaciones P2P de Voltera en Polygon Amoy (testnet gratuita)",
+  "description": "Contratos de la POC blockchain de Voltera (liquidacion P2P, comunidades, cesion multifirma y certificados NFT) en Polygon Amoy (testnet gratuita)",
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "coverage": "hardhat coverage",
+    "lint": "solhint 'contracts/**/*.sol'",
+    "lint:fix": "solhint 'contracts/**/*.sol' --fix",
+    "check": "npm run lint && npm run build && npm test",
     "deploy:amoy": "hardhat run scripts/deploy.js --network amoy",
+    "deploy:faltantes": "hardhat run scripts/deploy-faltantes.js --network amoy",
     "verify:amoy": "hardhat verify --network amoy",
+    "integridad": "hardhat run scripts/verificar-integridad.js",
     "node": "hardhat node",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "dotenv": "^16.4.5",
-    "hardhat": "^2.22.10"
+    "hardhat": "^2.22.10",
+    "solhint": "^5.2.0"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2"
