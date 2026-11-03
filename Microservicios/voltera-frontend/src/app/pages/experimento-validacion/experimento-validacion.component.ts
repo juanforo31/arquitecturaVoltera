@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BlockchainService } from '../../services/blockchain.service';
 import { CertificadoService } from '../../services/certificado.service';
 import { ToastService } from '../../core/toast.service';
-import { AnclarRequest } from '../../core/models';
+import { AnclarRequest, RedInfo } from '../../core/models';
 
 /** Un criterio medible del experimento (lámina 06). */
 interface Criterio {
@@ -24,13 +24,27 @@ interface Criterio {
   templateUrl: './experimento-validacion.component.html',
   styleUrl: '../blockchain/marketplace.scss',
 })
-export class ExperimentoValidacionComponent {
+export class ExperimentoValidacionComponent implements OnInit {
   private bc = inject(BlockchainService);
   private cert = inject(CertificadoService);
   private toast = inject(ToastService);
 
   corriendo1 = false;
   corriendo2 = false;
+
+  /** Estado de la red/contrato on-chain (panel de contexto para la demo). */
+  red?: RedInfo;
+  redCargando = true;
+  /** Marca de tiempo de la última corrida (para la evidencia). */
+  ejecutadoEn?: string;
+
+  ngOnInit(): void {
+    // Carga el contexto on-chain al abrir: red, chainId, contrato, disponibilidad.
+    this.bc.red().subscribe({
+      next: (r) => { this.red = r; this.redCargando = false; },
+      error: () => { this.redCargando = false; },
+    });
+  }
 
   // Experimento 1 · Oráculo + prueba de integridad
   exp1: Criterio[] = [
@@ -53,6 +67,7 @@ export class ExperimentoValidacionComponent {
   // ---------------- Experimento 1 ----------------
   async correrExp1(): Promise<void> {
     this.corriendo1 = true;
+    if (!this.ejecutadoEn) this.ejecutadoEn = new Date().toISOString();
     this.reset(this.exp1);
     const txId = 'EXP06-' + Date.now().toString(36).toUpperCase();
     const body: AnclarRequest = {
@@ -141,6 +156,61 @@ export class ExperimentoValidacionComponent {
   private conteo(c: Criterio[]): string {
     const ok = c.filter((x) => x.estado === 'ok').length;
     return `${ok}/${c.length}`;
+  }
+
+  /** Resumen global de ambos experimentos (p. ej. "8/8"). */
+  get resumenGlobal(): string {
+    const ok = [...this.exp1, ...this.exp2].filter((x) => x.estado === 'ok').length;
+    const total = this.exp1.length + this.exp2.length;
+    return `${ok}/${total}`;
+  }
+
+  /** ¿Se corrieron ya los dos experimentos? (habilita exportar evidencia). */
+  get hayResultados(): boolean {
+    return [...this.exp1, ...this.exp2].some((c) => c.estado === 'ok' || c.estado === 'fail');
+  }
+
+  /** Enlace al contrato en el explorador (PolygonScan Amoy). */
+  get explorerContrato(): string | null {
+    if (!this.red?.explorer || !this.red?.contrato) return null;
+    return `${this.red.explorer.replace(/\/$/, '')}/address/${this.red.contrato}`;
+  }
+
+  /** Corre ambos experimentos en secuencia (botón "Ejecutar todo" para la demo). */
+  async correrTodo(): Promise<void> {
+    this.ejecutadoEn = new Date().toISOString();
+    await this.correrExp1();
+    await this.correrExp2();
+  }
+
+  /** Descarga la evidencia de la corrida como JSON (para adjuntar a la entrega). */
+  exportarEvidencia(): void {
+    const evidencia = {
+      proyecto: 'Voltera · ARTI4208 · Módulo 4',
+      experimento: 'Lámina 06 — Validación blockchain',
+      ejecutadoEn: this.ejecutadoEn ?? new Date().toISOString(),
+      red: this.red ?? null,
+      resumenGlobal: this.resumenGlobal,
+      experimento1: {
+        titulo: 'Supervisión de telemetría vía oráculo (prueba de integridad)',
+        resultado: this.resumen1,
+        criterios: this.exp1,
+      },
+      experimento2: {
+        titulo: 'Generación de NFT ERC-721 (unicidad)',
+        resultado: this.resumen2,
+        criterios: this.exp2,
+      },
+    };
+    const blob = new Blob([JSON.stringify(evidencia, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const sello = (this.ejecutadoEn ?? new Date().toISOString()).replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `evidencia-experimento-${sello}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toast.success('Evidencia exportada', 'Se descargó el JSON de la corrida.');
   }
 
   corto(h?: string | null): string {

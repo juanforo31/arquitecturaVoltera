@@ -16,6 +16,50 @@
     </nav>
   </div>
 
+  <!-- PANEL DE CONTEXTO ON-CHAIN + CONTROLES GLOBALES -->
+  <section class="v-card">
+    <div class="mp-toolbar">
+      <h2>Contexto on-chain</h2>
+      <div class="mp-actions">
+        <span class="pill" [class.pill-ok]="resumenGlobal==='8/8'">Global: {{ resumenGlobal }}</span>
+        <button class="v-btn" (click)="correrTodo()" [disabled]="corriendo1 || corriendo2">
+          {{ (corriendo1 || corriendo2) ? 'Ejecutando…' : '▶ Ejecutar todo' }}
+        </button>
+        <button class="v-btn" (click)="exportarEvidencia()" [disabled]="!hayResultados">⬇ Exportar evidencia</button>
+      </div>
+    </div>
+
+    <div class="red-grid" *ngIf="!redCargando; else cargandoRed">
+      <div class="red-item">
+        <span class="red-lbl">Red</span>
+        <span class="red-val">{{ red?.red || '—' }}</span>
+      </div>
+      <div class="red-item">
+        <span class="red-lbl">Chain ID</span>
+        <span class="red-val">{{ red?.chainId || '—' }}</span>
+      </div>
+      <div class="red-item">
+        <span class="red-lbl">Cadena disponible</span>
+        <span class="red-val">
+          <span class="pill" [class.pill-ok]="red?.disponible" [class.pill-info]="!red?.disponible">
+            {{ red?.disponible ? 'sí (RPC activo)' : 'modo demo' }}
+          </span>
+        </span>
+      </div>
+      <div class="red-item red-item-wide">
+        <span class="red-lbl">Contrato</span>
+        <span class="red-val">
+          <a *ngIf="explorerContrato; else sinContrato" [href]="explorerContrato" target="_blank" rel="noopener">
+            {{ corto(red?.contrato) }} ↗ (PolygonScan)
+          </a>
+          <ng-template #sinContrato>{{ corto(red?.contrato) }}</ng-template>
+        </span>
+      </div>
+    </div>
+    <ng-template #cargandoRed><p class="muted">Consultando estado de la red…</p></ng-template>
+    <p class="muted" *ngIf="ejecutadoEn">Última corrida: {{ ejecutadoEn }}</p>
+  </section>
+
   <!-- EXPERIMENTO 1 -->
   <section class="v-card">
     <div class="mp-toolbar">

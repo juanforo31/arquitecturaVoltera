@@ -348,3 +348,17 @@
 .mp .criterios li.fail { border-left-color: #e74c3c; }
 .mp .criterios li.fail .ic { color: #e74c3c; }
 .mp .criterios li.corriendo { border-left-color: #4aa3ff; }
+
+/* Panel de contexto on-chain del experimento (red/chainId/contrato) */
+.mp .red-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 10px;
+}
+.mp .red-item {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+  border: 1px solid var(--v-border, #2a3244); border-radius: 8px; background: var(--v-surface-2, #1b2130);
+}
+.mp .red-item-wide { grid-column: 1 / -1; }
+.mp .red-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--v-text-dim, #8a93a6); }
+.mp .red-val { font-size: 14px; color: var(--v-text, #e8ecf3); font-family: monospace; word-break: break-all; }
+.mp .red-val a { color: var(--v-accent, #4aa3ff); text-decoration: none; }
+.mp .red-val a:hover { text-decoration: underline; }
