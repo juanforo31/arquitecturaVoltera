@@ -33,7 +33,7 @@ Propiedades que se evidencian:
 | **WSO2 API Manager** | API Gateway (OAuth2, rate limit) | clúster (LAN) |
 | **liquidacion-p2p** | casa las órdenes, crea el contrato | clúster k8s `voltera-app` |
 | **blockchain-gateway** | calcula hash, firma y ancla en Amoy | Render (público) |
-| **Polygon Amoy** | registro inmutable (contrato `0xd0Ef…Bcf530`) | testnet EVM |
+| **Polygon Amoy** | registro inmutable (contrato `0x5996…C828000`) | testnet EVM |
 
 ### Dos formas de disparar el anclaje (ambas implementadas)
 
@@ -64,7 +64,7 @@ cd Microservicios
 Imprime 7 pasos y guarda un JSON de evidencia en `evidencia-experimento/`:
 
 ```
-PASO 0 · gateway + cadena conectada (chainId 80002, contrato 0xd0Ef…)
+PASO 0 · gateway + cadena conectada (chainId 80002, contrato 0x5996…)
 PASO 1 · token OAuth2 (BFF → WSO2)
 PASO 2 · órdenes y reglas de casación
 PASO 3 · (1) CASAR → contrato creado en liquidacion-p2p

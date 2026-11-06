@@ -2,6 +2,9 @@ package com.voltera.blockchain.infrastructure.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Propiedades de conexion a la cadena. Se rellenan desde variables de entorno
  * VOLTERA_BLOCKCHAIN_* / application.yml.
@@ -13,6 +16,11 @@ public class BlockchainProperties {
     private String rpcUrl = "";
     /** Clave privada de la cuenta oraculo (solo testnet). */
     private String privateKey = "";
+    /**
+     * Claves de billeteras oraculo de RESPALDO, separadas por coma (solo testnet).
+     * Se usan, en orden, cuando la principal no tiene saldo para el gas.
+     */
+    private String privateKeys = "";
     /** Direccion del contrato LiquidacionP2PAnchor desplegado. */
     private String contractAddress = "";
     /** Direccion del contrato CertificadoOrigenNFT (ERC-721) desplegado. */
@@ -23,7 +31,17 @@ public class BlockchainProperties {
     private String network = "polygon-amoy";
 
     public boolean estaConfigurada() {
-        return !isBlank(rpcUrl) && !isBlank(privateKey) && !isBlank(contractAddress);
+        return !isBlank(rpcUrl) && !clavesOraculo().isEmpty() && !isBlank(contractAddress);
+    }
+
+    /** Clave principal primero y luego las de respaldo, sin vacias ni repetidas. */
+    public List<String> clavesOraculo() {
+        List<String> claves = new ArrayList<>();
+        if (!isBlank(privateKey)) claves.add(privateKey);
+        for (String k : privateKeys.split(",")) {
+            if (!isBlank(k) && !claves.contains(k)) claves.add(k);
+        }
+        return claves;
     }
 
     private static boolean isBlank(String s) {
@@ -44,6 +62,8 @@ public class BlockchainProperties {
     public void setRpcUrl(String rpcUrl) { this.rpcUrl = limpiar(rpcUrl); }
     public String getPrivateKey() { return privateKey; }
     public void setPrivateKey(String privateKey) { this.privateKey = limpiar(privateKey); }
+    public String getPrivateKeys() { return privateKeys; }
+    public void setPrivateKeys(String privateKeys) { this.privateKeys = limpiar(privateKeys); }
     public String getContractAddress() { return contractAddress; }
     public void setContractAddress(String contractAddress) { this.contractAddress = limpiar(contractAddress); }
     public String getCertificadoNftAddress() { return certificadoNftAddress; }

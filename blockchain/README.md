@@ -131,8 +131,8 @@ Eventos: `CertificadoEmitido` + los estándar de ERC-721 (`Transfer`, `Approval`
 |---|---|
 | 4 contratos Solidity | ✅ Escritos, compilan (solc 0.8.24 / Cancun). |
 | Suite de tests | ✅ **37 passing** (`npm test`): 8 anchor + 9 comunidad + 11 multisig + 9 NFT. |
-| `LiquidacionP2PAnchor` en Amoy | ✅ **LIVE** en `0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530` (anclajes reales confirmados; ver `../SESION_BLOCKCHAIN_ESTADO.md`). |
-| Comunidad / Multisig / NFT en Amoy | ⏳ Pendientes de desplegar por falta de gas de prueba. Correr `npm run deploy:faltantes` tras recargar POL en el faucet (preserva el anchor LIVE). |
+| `LiquidacionP2PAnchor` en Amoy | ✅ **LIVE** en `0x59965b91bE294D1da408eAc8BB5455ca1C828000` (anclajes reales confirmados; ver `../SESION_BLOCKCHAIN_ESTADO.md`). |
+| Comunidad / Multisig / NFT en Amoy | ✅ **LIVE** (2026-11-06): Comunidad `0xfC0edb98c4541527D012c6d81956D6762966453E` · Multisig `0x3Cf07d38B59e9FC1a29bAcFCC9B8567D1411491d` · NFT `0x819bc480006D279158CA9dFD6893e73071aC98d2`. |
 | Gateway de borde (web3j) | ✅ `../Microservicios/ServiciosDeNegocio/blockchain-gateway-service/` (oráculo + indexador + OUTBOX). |
 | Front (marketplace P2P + NFT) | ✅ `../Microservicios/voltera-frontend/` páginas `/blockchain`, `/certificados`, `/microservicios-cadena`. |
 | Diagrama vivo | ✅ `../Modificados/Voltera_Arquitectura_Completa.drawio` (capa 4 blockchain). |

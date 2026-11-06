@@ -54,10 +54,10 @@ microservicios Spring Boot        · oráculo (empuja hash)              · Liqu
 ### 3.1 Contratos
 | Contrato | Patrón / familia | Estado on-chain (Amoy) |
 |---|---|---|
-| `LiquidacionP2PAnchor` | off-chain storage + Embedded Permission | **LIVE** `0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530` |
-| `ComunidadEnergeticaRegistry` | contract registry | ⏳ listo; pendiente de deploy (gas) |
-| `CesionCertificadoMultisig` | Multiple Authorization (2 firmas) | ⏳ listo; pendiente de deploy (gas) |
-| `CertificadoOrigenNFT` | Tokenización · ERC-721 no fungible | ⏳ listo; pendiente de deploy (gas) |
+| `LiquidacionP2PAnchor` | off-chain storage + Embedded Permission | **LIVE** `0x59965b91bE294D1da408eAc8BB5455ca1C828000` |
+| `ComunidadEnergeticaRegistry` | contract registry | **LIVE** `0xfC0edb98c4541527D012c6d81956D6762966453E` |
+| `CesionCertificadoMultisig` | Multiple Authorization (2 firmas) | **LIVE** `0x3Cf07d38B59e9FC1a29bAcFCC9B8567D1411491d` |
+| `CertificadoOrigenNFT` | Tokenización · ERC-721 no fungible | **LIVE** `0x819bc480006D279158CA9dFD6893e73071aC98d2` |
 
 ### 3.2 Frontend (Módulo 4)
 - `/blockchain` — Marketplace P2P (libro de órdenes, casación, anclaje on-chain, verificación).
@@ -128,19 +128,20 @@ npm install && npm run build       # build de producción
 
 ## 6. Qué falta (acciones del usuario, no de código)
 
-Para dejar los 3 contratos restantes LIVE y que el anclaje P2P confirme desde Render:
+Los 4 contratos están LIVE desde 2026-11-06 con la wallet de prueba
+`0xB7aCd8EEeE86Be961EAf832657b3B6807220fbCf` (anclaje de prueba confirmado: tx
+`0x3d85a52929cf21c87c207d799f52477bf46dc99118bbed34aa1277fb8547da40`, bloque 52112053).
+Para que el gateway en Render deje el modo demo, configurar en su panel (Environment, como secretos):
 
-1. **Recargar gas de prueba:** faucet de Amoy → wallet `0xa0A18C1D64272f9a6a248Deb5106994F5D8AFDf2`
-   (~0.2 POL). https://faucet.polygon.technology (red Amoy, token POL).
-2. **Desplegar los faltantes** (preserva el anchor LIVE):
-   ```bash
-   cd Blockchain
-   AMOY_RPC_URL=https://polygon-amoy-bor-rpc.publicnode.com npm run deploy:faltantes
-   ```
-3. **Render:** poner `VOLTERA_BLOCKCHAIN_RPC_URL = https://polygon-amoy-bor-rpc.publicnode.com`
-   (el `drpc.org` rechaza el envío de transacciones con "Temporary internal error").
+| Variable | Valor |
+|---|---|
+| `VOLTERA_BLOCKCHAIN_RPC_URL` | `https://polygon-amoy-bor-rpc.publicnode.com` |
+| `VOLTERA_BLOCKCHAIN_PRIVATE_KEY` | clave privada de la wallet de prueba (nunca en el repo) |
+| `VOLTERA_BLOCKCHAIN_CONTRACT_ADDRESS` | `0x59965b91bE294D1da408eAc8BB5455ca1C828000` |
+| `VOLTERA_BLOCKCHAIN_CERTIFICADO_NFT` | `0x819bc480006D279158CA9dFD6893e73071aC98d2` |
+| `VOLTERA_BLOCKCHAIN_CHAIN_ID` | `80002` |
 
-Nada de esto requiere cambios de código: todo está escrito, probado y versionado.
+Gas: recargar POL en https://faucet.polygon.technology (red Amoy) cuando el saldo baje de ~0.01 POL.
 
 ---
 

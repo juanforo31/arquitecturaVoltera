@@ -30,6 +30,8 @@ voltera:
   blockchain:
     rpc-url: ${VOLTERA_BLOCKCHAIN_RPC_URL:}
     private-key: ${VOLTERA_BLOCKCHAIN_PRIVATE_KEY:}
+    # Billeteras oraculo de respaldo (claves separadas por coma) si la principal se queda sin gas
+    private-keys: ${VOLTERA_BLOCKCHAIN_PRIVATE_KEYS:}
     contract-address: ${VOLTERA_BLOCKCHAIN_CONTRACT_ADDRESS:}
     certificado-nft-address: ${VOLTERA_BLOCKCHAIN_CERTIFICADO_NFT:}
     chain-id: ${VOLTERA_BLOCKCHAIN_CHAIN_ID:80002}

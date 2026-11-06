@@ -34,21 +34,21 @@ public class Web3jCadenaAdapter implements CadenaBlockchainPort {
     private static final Logger log = LoggerFactory.getLogger(Web3jCadenaAdapter.class);
 
     private final Web3j web3j;
-    private final Credentials credentials;
+    private final SelectorBilletera selector;
     private final String contractAddress;
     private final long chainId;
 
-    public Web3jCadenaAdapter(Web3j web3j, Credentials credentials,
+    public Web3jCadenaAdapter(Web3j web3j, SelectorBilletera selector,
                               String contractAddress, long chainId) {
         this.web3j = web3j;
-        this.credentials = credentials;
+        this.selector = selector;
         this.contractAddress = contractAddress;
         this.chainId = chainId;
     }
 
     @Override
     public boolean disponible() {
-        if (web3j == null || credentials == null
+        if (web3j == null || selector == null || selector.vacio()
                 || contractAddress == null || contractAddress.isBlank()) {
             return false;
         }
@@ -79,7 +79,6 @@ public class Web3jCadenaAdapter implements CadenaBlockchainPort {
             String data = FunctionEncoder.encode(fn);
 
             var receiptProcessor = new PollingTransactionReceiptProcessor(web3j, 3000, 20);
-            var txManager = new RawTransactionManager(web3j, credentials, chainId, receiptProcessor);
 
             // Gas price dinámico: Amoy rechaza transacciones por debajo de ~25 gwei
             // ("gas price below minimum"). Consultamos el precio real de la red y
@@ -89,6 +88,16 @@ public class Web3jCadenaAdapter implements CadenaBlockchainPort {
             // sobra. El default de web3j (9M) haría que coste = gasPrice*9M y agotara
             // el saldo del faucet ("insufficient funds for gas").
             BigInteger gasLimit = BigInteger.valueOf(200_000L);
+
+            // Billetera con fondos: si la principal se quedo sin POL, firma la de respaldo.
+            BigInteger costoMaximo = gasPrice.multiply(gasLimit);
+            Credentials credentials = selector.elegir(costoMaximo).orElse(null);
+            if (credentials == null) {
+                return ResultadoAnclaje.transitorio(
+                        "ninguna billetera oraculo tiene saldo para el gas maximo (" + costoMaximo + " wei)");
+            }
+            log.info("Anclando transaccion={} con billetera {}", a.transaccionId(), credentials.getAddress());
+            var txManager = new RawTransactionManager(web3j, credentials, chainId, receiptProcessor);
 
             EthSendTransaction sent = txManager.sendTransaction(
                     gasPrice, gasLimit, contractAddress, data, BigInteger.ZERO);

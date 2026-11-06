@@ -113,7 +113,7 @@ export class ExperimentoValidacionComponent implements OnInit {
     const t0 = Date.now();
     try {
       const c = await this.cert.emitir({
-        emisor: '0xA0A18C1D64272f9a6a248Deb5106994F5D8AFDf2',
+        emisor: '0xB7aCd8EEeE86Be961EAf832657b3B6807220fbCf',
         propietario: '0x1111111111111111111111111111111111111111',
         idMedidor: medidor, consumoNetoMensualWh: 120000, periodo,
       } as any).toPromise();
@@ -129,7 +129,7 @@ export class ExperimentoValidacionComponent implements OnInit {
       // Prueba de unicidad: emisión duplicada (mismo medidor+periodo) debe fallar.
       try {
         await this.cert.emitir({
-          emisor: '0xA0A18C1D64272f9a6a248Deb5106994F5D8AFDf2',
+          emisor: '0xB7aCd8EEeE86Be961EAf832657b3B6807220fbCf',
           propietario: '0x3333333333333333333333333333333333333333',
           idMedidor: medidor, consumoNetoMensualWh: 99999, periodo,
         } as any).toPromise();

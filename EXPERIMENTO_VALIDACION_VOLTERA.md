@@ -25,7 +25,7 @@
 
 **Evidencia real (circuito ya validado en sesiones previas):** anclaje `CONFIRMADO`, txHash on-chain
 (status 0x1), `integro:true` con datos intactos y `integro:false` con datos alterados. El contrato
-`LiquidacionP2PAnchor` está desplegado en Amoy (`0xd0Ef…EBcf530`).
+`LiquidacionP2PAnchor` está desplegado en Amoy (`0x5996…C828000`).
 
 ---
 

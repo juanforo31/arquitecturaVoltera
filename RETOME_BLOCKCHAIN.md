@@ -11,7 +11,7 @@
 |---|---|---|
 | **Git** `main` | ✅ todo pusheado | HEAD `084fce7`, árbol limpio, origin == local |
 | **Gateway (Render)** | ✅ LIVE y al día | `/actuator/health` 200; `/api/v1/anclajes/comunidades` 200; red `configurada:true, disponible:true` |
-| **Contrato LiquidacionP2PAnchor (Amoy)** | ✅ desplegado | `0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530`, chainId 80002 |
+| **Contrato LiquidacionP2PAnchor (Amoy)** | ✅ desplegado | `0x59965b91bE294D1da408eAc8BB5455ca1C828000`, chainId 80002 |
 | **Código en GitHub** | ✅ completo | proyecto Hardhat + diagrama ya versionados (antes estaban ignorados) |
 | **Front (Vercel)** | ✅ LIVE y al día | sirve `main-JNXGBHCI.js` (== build local nuevo); `/` y `/blockchain` 200; feature de comunidades desplegada el 2026-10-21 |
 

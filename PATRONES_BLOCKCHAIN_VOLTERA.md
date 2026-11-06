@@ -66,7 +66,7 @@ El dato crudo vive **off-chain** en los microservicios Spring Boot. La cadena gu
   recomputar el hash con el mismo algoritmo canónico para verificar (acoplamiento de formato).
 
 **Dónde.** `LiquidacionP2PAnchor.anclar(txId, hashCasacion, energiaWh, liquidadaEn)`; verificación
-con `verificar(txId, hashEsperado)`. Contrato desplegado en Amoy `0xd0Ef…EBcf530`.
+con `verificar(txId, hashEsperado)`. Contrato desplegado en Amoy `0x5996…C828000`.
 
 ---
 

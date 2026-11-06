@@ -14,7 +14,7 @@
 // =============================================================================
 const hre = require("hardhat");
 
-const CONTRATO = process.env.CONTRATO || "0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530";
+const CONTRATO = process.env.CONTRATO || "0x59965b91bE294D1da408eAc8BB5455ca1C828000";
 const DRY_RUN = process.env.DRY_RUN === "1";
 
 async function main() {

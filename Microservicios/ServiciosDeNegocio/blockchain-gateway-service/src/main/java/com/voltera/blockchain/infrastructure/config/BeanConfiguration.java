@@ -9,6 +9,7 @@ import com.voltera.blockchain.domain.port.out.EventPublisherPort;
 import com.voltera.blockchain.domain.port.out.HashServicePort;
 import com.voltera.blockchain.infrastructure.blockchain.CadenaNoConfigurada;
 import com.voltera.blockchain.infrastructure.blockchain.CertificadoNftDemoAdapter;
+import com.voltera.blockchain.infrastructure.blockchain.SelectorBilletera;
 import com.voltera.blockchain.infrastructure.blockchain.Web3jCadenaAdapter;
 import com.voltera.blockchain.infrastructure.blockchain.Web3jCertificadoNftAdapter;
 import com.voltera.blockchain.infrastructure.crypto.Web3jHashService;
@@ -25,6 +26,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
+
+import java.util.List;
 
 /**
  * Wiring hexagonal (Ports & Adapters). Elige el adaptador de cadena segun haya o
@@ -65,10 +68,17 @@ public class BeanConfiguration {
                     + "Arrancando en modo demo: los anclajes quedaran PENDIENTE.");
             return new CadenaNoConfigurada();
         }
-        Credentials credentials = Credentials.create(normalizar(props.getPrivateKey()));
-        log.info("Oraculo on-chain: {} | contrato: {} | chainId: {}",
-                credentials.getAddress(), props.getContractAddress(), props.getChainId());
-        return new Web3jCadenaAdapter(web3j, credentials, props.getContractAddress(), props.getChainId());
+        // Principal + respaldo: si una billetera se queda sin gas, firma la siguiente.
+        List<Credentials> billeteras = props.clavesOraculo().stream()
+                .map(k -> Credentials.create(normalizar(k)))
+                .toList();
+        for (int i = 0; i < billeteras.size(); i++) {
+            log.info("Oraculo on-chain #{}{}: {}", i + 1, i == 0 ? " (principal)" : " (respaldo)",
+                    billeteras.get(i).getAddress());
+        }
+        log.info("Contrato: {} | chainId: {}", props.getContractAddress(), props.getChainId());
+        return new Web3jCadenaAdapter(web3j, SelectorBilletera.conWeb3j(web3j, billeteras),
+                props.getContractAddress(), props.getChainId());
     }
 
     @Bean

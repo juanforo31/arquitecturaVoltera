@@ -405,7 +405,7 @@ export class CertificadosComponent implements OnInit {
   // ---------------- Semillas / helpers ----------------
   private sembrarBilleteras(): void {
     this.billeteras = [
-      { address: '0xA0A18C1D64272f9a6a248Deb5106994F5D8AFDf2', etiqueta: 'Operador/Emisor' },
+      { address: '0xB7aCd8EEeE86Be961EAf832657b3B6807220fbCf', etiqueta: 'Operador/Emisor' },
       { address: '0x1111111111111111111111111111111111111111', etiqueta: 'Prosumidor Solar' },
       { address: '0x2222222222222222222222222222222222222222', etiqueta: 'Comercializadora' },
       { address: '0x3333333333333333333333333333333333333333', etiqueta: 'Prosumidor Eólico' },

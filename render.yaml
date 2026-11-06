@@ -9,7 +9,11 @@
 #      "Temporary internal error, code 19" → los anclajes quedan en PENDIENTE.
 #      publicnode SÍ acepta eth_sendRawTransaction. Verificado 2026-10-27.)
 #   VOLTERA_BLOCKCHAIN_PRIVATE_KEY    = 0x... (clave de la wallet de prueba)
-#   VOLTERA_BLOCKCHAIN_CONTRACT_ADDRESS = 0xd0Ef1686fcAF3f026134DE4188bd977c4EBcf530
+#   VOLTERA_BLOCKCHAIN_CONTRACT_ADDRESS = 0x59965b91bE294D1da408eAc8BB5455ca1C828000
+#   VOLTERA_BLOCKCHAIN_CERTIFICADO_NFT  = 0x819bc480006D279158CA9dFD6893e73071aC98d2
+#     (agregarla a mano en el dashboard; sin ella /certificados queda en modo demo)
+#   VOLTERA_BLOCKCHAIN_PRIVATE_KEYS     = 0x...,0x... (opcional: billeteras oraculo de respaldo
+#     que firman los anclajes cuando la principal se queda sin gas; agregar a mano)
 services:
   - type: web
     name: voltera-blockchain-gateway

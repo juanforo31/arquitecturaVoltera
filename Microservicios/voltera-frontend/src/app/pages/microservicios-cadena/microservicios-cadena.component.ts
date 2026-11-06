@@ -111,7 +111,7 @@ export class MicroserviciosCadenaComponent implements OnInit {
   emitirDesde(s: SolicitudCertificacion): void {
     if (s.estado !== 'APROBADA') { this.toast.error('No aprobada', `La solicitud ${s.id} aún no tiene los dos avales.`); return; }
     this.certRen.emitir({
-      idMedidor: s.medidorId, emisor: '0xA0A18C1D64272f9a6a248Deb5106994F5D8AFDf2',
+      idMedidor: s.medidorId, emisor: '0xB7aCd8EEeE86Be961EAf832657b3B6807220fbCf',
       titular: s.propietario, consumoNetoMensualWh: s.energiaWh, periodo: s.periodo,
       solicitudCertificacionId: s.id,
     }).subscribe({
